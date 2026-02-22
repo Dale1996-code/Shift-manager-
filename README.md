@@ -582,7 +582,7 @@ const toggleTopStockZone = (zone) => {
       Top Stock & Zoning Tracker
     </h3>
     <span className="text-xs text-slate-400">
-      {Object.values(topStockZones).filter(Boolean).length}/5 complete
+      {Object.values(topStockZones).filter(Boolean).length}/{Object.keys(topStockZones).length} complete
     </span>
   </div>
 
