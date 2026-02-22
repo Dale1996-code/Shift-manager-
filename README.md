@@ -554,3 +554,58 @@ size={20}
 
 }
 }
+## Top Stock & Zoning Tracker Snippets
+
+```js
+const [topStockZones, setTopStockZones] = useState({
+  Cereal: false,
+  Paper: false,
+  Chemicals: false,
+  Juice: false,
+  Snacks: false,
+});
+```
+
+```js
+const toggleTopStockZone = (zone) => {
+  setTopStockZones((prev) => ({
+    ...prev,
+    [zone]: !prev[zone],
+  }));
+};
+```
+
+```js
+<div className="card glass bg-slate-900/50 rounded-xl p-4 border border-slate-700/60">
+  <div className="flex items-center justify-between mb-3">
+    <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
+      Top Stock & Zoning Tracker
+    </h3>
+    <span className="text-xs text-slate-400">
+      {Object.values(topStockZones).filter(Boolean).length}/5 complete
+    </span>
+  </div>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    {Object.entries(topStockZones).map(([zone, completed]) => (
+      <button
+        key={zone}
+        onClick={() => toggleTopStockZone(zone)}
+        className={`w-full rounded-lg border px-3 py-2 text-left transition-all duration-200 ${
+          completed
+            ? 'border-emerald-500 bg-emerald-500/10 text-emerald-300'
+            : 'border-slate-700 bg-slate-800/60 text-slate-200 hover:border-slate-500 hover:bg-slate-800'
+        }`}
+      >
+        <span
+          className={`font-medium ${
+            completed ? 'line-through decoration-2 decoration-emerald-400' : ''
+          }`}
+        >
+          {zone}
+        </span>
+      </button>
+    ))}
+  </div>
+</div>
+```
