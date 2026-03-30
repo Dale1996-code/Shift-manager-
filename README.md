@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -436,33 +434,37 @@
         // --- RENDERERS ---
         function renderHeader() {
             return `
-                <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6 no-print">
+                <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4 no-print">
                     <div class="flex items-center justify-between md:block">
                         <div>
                             <p class="text-xs text-slate-400">${new Date().toLocaleDateString()}</p>
                             <h1 class="text-2xl font-bold text-white tracking-tight">Shift Control</h1>
+                            <p class="text-xs text-slate-500">Build plan fast, then execute.</p>
                         </div>
                         <div class="md:hidden flex gap-2">
-                             <button onclick="toggleTheme()" class="btn p-2 rounded-lg glass">
+                            <button onclick="toggleTheme()" class="btn p-2 rounded-lg glass" title="Toggle theme">
                                 <i data-lucide="${theme === "dark" ? "sun" : "moon"}" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="startNewDay()" class="btn p-2 rounded-lg glass text-rose-300 border border-rose-500/30" title="Start new shift">
+                                <i data-lucide="sun" class="w-4 h-4"></i>
                             </button>
                         </div>
                     </div>
-                    
+
                     <div id="timerDisplay" class="flex-1 mx-0 md:mx-4"></div>
 
                     <div class="flex flex-wrap gap-2 items-center justify-center md:justify-end">
-                         <button onclick="toggleTheme()" class="hidden md:block btn px-3 py-2 rounded-lg glass">
-                            <i data-lucide="${theme === "dark" ? "sun" : "moon"}" class="w-4 h-4"></i>
+                        <button onclick="toggleTheme()" class="hidden md:flex btn px-3 py-2 rounded-lg glass items-center gap-2 text-xs text-slate-200">
+                            <i data-lucide="${theme === "dark" ? "sun" : "moon"}" class="w-4 h-4"></i> Theme
                         </button>
-                        <button onclick="startNewDay()" class="btn px-3 py-2 rounded-lg glass text-rose-300 border border-rose-500/30" title="Start New Day">
-                            <i data-lucide="sun" class="w-4 h-4"></i>
+                        <button onclick="startNewDay()" class="hidden md:flex btn px-3 py-2 rounded-lg glass text-rose-300 border border-rose-500/30 items-center gap-2 text-xs" title="Start New Day">
+                            <i data-lucide="sun" class="w-4 h-4"></i> New Shift
                         </button>
-                        
+
                         <div class="flex bg-slate-800/50 rounded-lg p-1 border border-slate-700 overflow-x-auto max-w-full">
-                            <button onclick="switchView('input')" class="px-3 py-1 text-sm whitespace-nowrap rounded ${currentView==='input' ? 'bg-sky-600 text-white' : 'text-slate-300'}">Inputs</button>
-                            <button onclick="switchView('dashboard')" class="px-3 py-1 text-sm whitespace-nowrap rounded ${currentView==='dashboard' ? 'bg-sky-600 text-white' : 'text-slate-300'}">Plan</button>
-                            <button onclick="switchView('safety')" class="px-3 py-1 text-sm whitespace-nowrap rounded ${currentView==='safety' ? 'bg-sky-600 text-white' : 'text-slate-300'}">Safety</button>
+                            <button onclick="switchView('input')" class="px-3 py-1 text-sm whitespace-nowrap rounded ${currentView==='input' ? 'bg-sky-600 text-white' : 'text-slate-300'}">Shift Setup</button>
+                            <button onclick="switchView('dashboard')" class="px-3 py-1 text-sm whitespace-nowrap rounded ${currentView==='dashboard' ? 'bg-sky-600 text-white' : 'text-slate-300'}">Live Plan</button>
+                            <button onclick="switchView('safety')" class="px-3 py-1 text-sm whitespace-nowrap rounded ${currentView==='safety' ? 'bg-sky-600 text-white' : 'text-slate-300'}">Safety Walk</button>
                             <button onclick="switchView('supplies')" class="px-3 py-1 text-sm whitespace-nowrap rounded ${currentView==='supplies' ? 'bg-sky-600 text-white' : 'text-slate-300'}">Supplies</button>
                             <button onclick="switchView('history')" class="px-3 py-1 text-sm whitespace-nowrap rounded ${currentView==='history' ? 'bg-sky-600 text-white' : 'text-slate-300'}">History</button>
                         </div>
@@ -470,7 +472,6 @@
                 </div>
             `;
         }
-
         function renderTimer() {
             const el = document.getElementById("timerDisplay");
             if (!el) return;
@@ -500,16 +501,27 @@
         }
 
         function renderRosterSelector(dept, label) {
+            if (!roster.length) {
+                return `
+                    <div class="col-span-1 border border-slate-800/50 rounded-xl p-2.5 bg-slate-900/20">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-sm font-semibold text-slate-300">${label}</h3>
+                            <span class="text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-400">0 assigned</span>
+                        </div>
+                        <p class="mt-2 text-xs text-slate-500 italic">Add team members in Manage Roster.</p>
+                    </div>
+                `;
+            }
+
             return `
                 <div class="col-span-1 border border-slate-800/50 rounded-xl p-3 bg-slate-900/20">
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="text-sm font-semibold text-slate-300">${label}</h3>
-                        <span class="text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-400">${shiftData.associates[dept].length}</span>
+                        <span class="text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-400">${shiftData.associates[dept].length} assigned</span>
                     </div>
                     <div class="flex flex-wrap gap-2">
                         ${roster.map(name => {
                             const active = shiftData.associates[dept].includes(name);
-                            // Check if assigned elsewhere
                             let assignedElsewhere = false;
                             Object.keys(shiftData.associates).forEach(k => {
                                 if (k !== dept && shiftData.associates[k].includes(name)) assignedElsewhere = true;
@@ -520,14 +532,12 @@
                             else if (assignedElsewhere) classes = "bg-slate-800 text-slate-500 border-slate-700 opacity-30 cursor-not-allowed";
                             else classes = "glass text-slate-300 hover:bg-slate-700";
 
-                            return `<button onclick="toggleAssociate('${dept}', '${name}')" class="px-2 py-1 text-xs rounded border transition-all ${classes}">${name}</button>`;
+                            return `<button onclick="toggleAssociate('${dept}', '${name}')" class="px-2 py-1 text-xs rounded-full border transition-all ${classes}">${name}</button>`;
                         }).join("")}
-                        ${!roster.length ? `<span class="text-xs text-slate-500 italic">Add names to Roster &rarr;</span>` : ''}
                     </div>
                 </div>
             `;
         }
-
         function renderInputView() {
             const problems = [
                 "Deli cooking prep behind", "Produce not maxed/full", "Meat not maxed/full",
@@ -536,84 +546,85 @@
 
             return `
                 ${renderHeader()}
-                <div class="grid lg:grid-cols-3 gap-6">
-                    <div class="card rounded-2xl p-6 lg:col-span-2 space-y-6">
-                        <div class="flex flex-wrap gap-4 justify-between items-end">
-                            <div class="w-full sm:w-auto">
+                <div class="space-y-4 pb-24">
+                    <div class="card rounded-2xl p-5">
+                        <div class="mb-3 flex items-center justify-between">
+                            <h2 class="text-lg font-bold text-white">Shift Snapshot</h2>
+                            <span class="text-xs text-slate-400">Set pace context first</span>
+                        </div>
+                        <div class="grid sm:grid-cols-3 gap-3 items-end">
+                            <div>
                                 <label class="text-xs text-slate-400 uppercase tracking-wider">Date</label>
                                 <input type="date" value="${shiftData.date}" onchange="updateInput('date', this.value)" class="w-full bg-slate-900/50 border border-slate-700 rounded p-2 text-white">
                             </div>
-                            <div class="w-full sm:w-auto">
+                            <div>
                                 <label class="text-xs text-slate-400 uppercase tracking-wider">Weather</label>
                                 <select onchange="updateInput('weather', this.value)" class="w-full bg-slate-900/50 border border-slate-700 rounded p-2 text-white">
                                     ${["Sunny","Rain","Snow"].map(w => `<option ${shiftData.weather===w?'selected':''}>${w}</option>`).join('')}
                                 </select>
                             </div>
-                            <div class="w-full sm:w-auto flex-1">
+                            <div>
                                 <label class="text-xs text-slate-400 uppercase tracking-wider">Pallet Count</label>
                                 <input type="number" value="${shiftData.palletCount}" onchange="updateInput('palletCount', Number(this.value))" class="w-full bg-slate-900/50 border border-slate-700 rounded p-2 text-white">
                             </div>
                         </div>
+                    </div>
 
-                        <div>
-                            <div class="mb-2 flex justify-between">
-                                <h2 class="text-lg font-bold text-white">Team Assignments</h2>
-                                <span class="text-sm text-sky-400">Total: ${getTotalAssociates()}</span>
-                            </div>
-                            <div class="grid md:grid-cols-2 gap-4">
-                                ${renderRosterSelector("grocery", "Grocery")}
-                                ${renderRosterSelector("produce", "Produce")}
-                                ${renderRosterSelector("meat", "Meat")}
-                                ${renderRosterSelector("frozenDairy", "Frozen/Dairy")}
-                                ${renderRosterSelector("deliBakery", "Deli/Bakery")}
-                            </div>
+                    <div class="card rounded-2xl p-5">
+                        <h2 class="text-lg font-bold text-white mb-3">Manage Roster</h2>
+                        <div class="flex gap-2 mb-3">
+                            <input id="rosterInput" placeholder="Add associate name" class="flex-1 bg-slate-900/50 border border-slate-700 rounded px-3 py-2 text-white">
+                            <button onclick="addRosterName()" class="btn bg-sky-600 text-white px-3 rounded"><i data-lucide="plus" class="w-4 h-4"></i></button>
                         </div>
-
-                        <div>
-                             <h2 class="text-lg font-bold text-white mb-2">Problem Areas</h2>
-                             <div class="grid sm:grid-cols-3 gap-2">
-                                ${problems.map(p => `
-                                    <button onclick="toggleProblemArea('${p}')" class="text-left text-xs p-2 rounded border ${shiftData.problemAreas.includes(p) ? 'bg-rose-600 text-white border-rose-500' : 'glass text-slate-400 border-transparent hover:border-slate-600'}">
-                                        ${p}
-                                    </button>
-                                `).join("")}
-                             </div>
-                             <div class="mt-2 flex gap-2">
-                                <input id="customProblemInput" placeholder="Add custom issue..." class="flex-1 bg-slate-900/50 border border-slate-700 rounded px-2 text-sm text-white">
-                                <button onclick="addCustomProblem()" class="btn bg-slate-700 px-3 py-1 rounded text-xs text-white">Add</button>
-                             </div>
+                        <div class="flex flex-wrap gap-2">
+                            ${roster.map(n => `
+                                <span class="inline-flex items-center gap-1 bg-slate-800 px-2 py-1 rounded-full text-xs text-slate-300 border border-slate-700">
+                                    ${n}
+                                    <button onclick="removeRosterName('${n}')" class="hover:text-rose-400"><i data-lucide="x" class="w-3 h-3"></i></button>
+                                </span>
+                            `).join("")}
+                            ${!roster.length ? '<p class="text-slate-500 text-sm italic">Add employees here, then assign them below.</p>' : ''}
                         </div>
                     </div>
 
-                    <div class="space-y-6">
-                        <div class="card rounded-2xl p-6">
-                            <h2 class="text-lg font-bold text-white mb-4">Manage Roster</h2>
-                            <div class="flex gap-2 mb-4">
-                                <input id="rosterInput" placeholder="Name" class="flex-1 bg-slate-900/50 border border-slate-700 rounded px-3 py-2 text-white">
-                                <button onclick="addRosterName()" class="btn bg-sky-600 text-white px-3 rounded"><i data-lucide="plus" class="w-4 h-4"></i></button>
-                            </div>
-                            <div class="flex flex-wrap gap-2">
-                                ${roster.map(n => `
-                                    <span class="inline-flex items-center gap-1 bg-slate-800 px-2 py-1 rounded text-xs text-slate-300 border border-slate-700">
-                                        ${n}
-                                        <button onclick="removeRosterName('${n}')" class="hover:text-rose-400"><i data-lucide="x" class="w-3 h-3"></i></button>
-                                    </span>
-                                `).join("")}
-                                ${!roster.length ? '<p class="text-slate-500 text-sm italic">Add employees here to enable assignment.</p>' : ''}
-                            </div>
+                    <div class="card rounded-2xl p-5">
+                        <div class="mb-3 flex justify-between items-center">
+                            <h2 class="text-lg font-bold text-white">Team Assignments</h2>
+                            <span class="text-sm text-sky-400">Assigned associates: ${getTotalAssociates()}</span>
                         </div>
+                        <div class="grid md:grid-cols-2 gap-3">
+                            ${renderRosterSelector("grocery", "Grocery")}
+                            ${renderRosterSelector("produce", "Produce")}
+                            ${renderRosterSelector("meat", "Meat")}
+                            ${renderRosterSelector("frozenDairy", "Frozen/Dairy")}
+                            ${renderRosterSelector("deliBakery", "Deli/Bakery")}
+                        </div>
+                    </div>
 
-                         <div class="card rounded-2xl p-6">
-                            <h2 class="text-lg font-bold text-white mb-4">Shift Notes</h2>
-                             <textarea rows="4" class="w-full bg-slate-900/50 border border-slate-700 rounded p-2 text-white text-sm" 
-                                placeholder="Delivery delays, VIP visits, etc."
-                                onchange="updateInput('shiftNotes', this.value)">${shiftData.shiftNotes}</textarea>
+                    <div class="card rounded-2xl p-5">
+                        <h2 class="text-lg font-bold text-white mb-3">Problem Areas</h2>
+                        <div class="flex flex-wrap gap-2">
+                            ${problems.map(p => `
+                                <button onclick="toggleProblemArea('${p}')" class="text-xs px-3 py-1.5 rounded-full border transition ${shiftData.problemAreas.includes(p) ? 'bg-rose-600 text-white border-rose-500' : 'glass text-slate-300 border-slate-700 hover:border-slate-500'}">
+                                    ${p}
+                                </button>
+                            `).join("")}
                         </div>
+                        <div class="mt-3 flex gap-2">
+                            <input id="customProblemInput" placeholder="Add custom issue..." class="flex-1 bg-slate-900/50 border border-slate-700 rounded px-2 text-sm text-white">
+                            <button onclick="addCustomProblem()" class="btn bg-slate-700 px-3 py-1 rounded text-xs text-white">Add</button>
+                        </div>
+                    </div>
+
+                    <div class="card rounded-2xl p-5">
+                        <h2 class="text-lg font-bold text-white mb-3">Shift Notes</h2>
+                        <textarea rows="4" class="w-full bg-slate-900/50 border border-slate-700 rounded p-2 text-white text-sm"
+                            placeholder="Delivery delays, VIP visits, staffing constraints..."
+                            onchange="updateInput('shiftNotes', this.value)">${shiftData.shiftNotes}</textarea>
                     </div>
                 </div>
             `;
         }
-
         function renderDashboardView() {
             const strat = getFreightStrategy();
             const fresh = getFreshPriorities();
@@ -823,6 +834,22 @@
             `;
         }
 
+
+        function renderStickySummaryBar() {
+            return `
+                <div class="fixed bottom-0 left-0 right-0 z-30 no-print border-t border-slate-700 bg-slate-950/95 backdrop-blur px-4 py-3">
+                    <div class="max-w-6xl mx-auto flex items-center justify-between gap-3 text-xs sm:text-sm">
+                        <div class="flex gap-3 sm:gap-5 text-slate-300">
+                            <span><strong class="text-white">Rostered:</strong> ${roster.length}</span>
+                            <span><strong class="text-white">Assigned:</strong> ${getTotalAssociates()}</span>
+                            <span><strong class="text-white">Issues:</strong> ${shiftData.problemAreas.length}</span>
+                        </div>
+                        <button onclick="copySummary()" class="btn bg-sky-600 text-white px-3 py-1.5 rounded-lg">Copy Summary</button>
+                    </div>
+                </div>
+            `;
+        }
+
         function render() {
             const app = document.getElementById("app");
             if (currentView === "input") app.innerHTML = renderInputView();
@@ -830,8 +857,9 @@
             else if (currentView === "safety") app.innerHTML = renderSafetyView();
             else if (currentView === "supplies") app.innerHTML = renderSuppliesView();
             else if (currentView === "history") app.innerHTML = renderHistoryView();
-            
-            renderTimer(); 
+
+            app.innerHTML += renderStickySummaryBar();
+            renderTimer();
             applyTheme();
             lucide.createIcons();
         }
@@ -839,4 +867,3 @@
         render();
     </script>
 </body>
-</html>
